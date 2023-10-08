@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the graph as an adjacency list with neighbors
+struct Node {
+    char label;
+    int neighborsCount;
+    struct Node** neighbors;
+};
+
+struct Node* createNode(char label, int numNeighbors) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->label = label;
+    node->neighborsCount = numNeighbors;
+    node->neighbors = (struct Node**)malloc(numNeighbors * sizeof(struct Node*));
+    return node;
+}
+
+struct Node* graph[7];
+
+void initializeGraph() {
+    for (int i = 0; i < 7; ++i) {
+        graph[i] = NULL;
+    }
+
+    graph[0] = createNode('S', 2);
+    graph[1] = createNode('A', 3);
+    graph[2] = createNode('D', 2);
+    graph[3] = createNode('G', 1);
+    graph[4] = createNode('B', 3);
+    graph[5] = createNode('C', 2);
+    graph[6] = createNode('E', 1);
+
+    // Connect nodes in the graph
+    graph[0]->neighbors[0] = graph[1];
+    graph[0]->neighbors[1] = graph[4];
+    graph[1]->neighbors[0] = graph[0];
+    graph[1]->neighbors[1] = graph[2];
+    graph[1]->neighbors[2] = graph[4];
+    graph[2]->neighbors[0] = graph[1];
+    graph[2]->neighbors[1] = graph[3];
+    graph[3]->neighbors[0] = graph[2];
+    graph[4]->neighbors[0] = graph[0];
+    graph[4]->neighbors[1] = graph[1];
+    graph[4]->neighbors[2] = graph[5];
+    graph[5]->neighbors[0] = graph[4];
+    graph[5]->neighbors[1] = graph[6];
+    graph[6]->neighbors[0] = graph[5];
+}
+
+// Heuristic function estimating remaining distance (e.g., Euclidean distance)
+int heuristic[] = {10, 7, 5, 0, 6, 7, 7};
+
+// Helper function for comparison in qsort
+int compare(const void *a, const void *b) {
+    struct Node* nodeA = *(struct Node**)a;
+    struct Node* nodeB = *(struct Node**)b;
+    return heuristic[nodeA->label - 'A'] - heuristic[nodeB->label - 'A'];
+}
+
+// Function to evaluate the solution
+int evaluate_solution(char* path, int heuristic[]) {
+    int total_heuristic = 0;
+    for (int i = 0; path[i] != '\0'; ++i) {
+        char node = path[i];
+        total_heuristic += heuristic[node - 'A'];
+    }
+    return total_heuristic;
+}
+
+// Function for hill climbing with heuristic
+void hill_climbing_with_heuristic(char* result, char source, char destination, int heuristic[]) {
+    char current_solution[100] = {source};
+    int current_heuristic = heuristic[source - 'A'];
+
+    while (current_solution[strlen(current_solution) - 1] != destination) {
+        struct Node* currentNode = graph[current_solution[strlen(current_solution) - 1] - 'A'];
+
+        // Sort neighbors based on heuristic
+        qsort(currentNode->neighbors, currentNode->neighborsCount, sizeof(struct Node*), compare);
+
+        // Select the neighbor with the smallest heuristic
+        char next_neighbor = currentNode->neighbors[0]->label;
+
+        // Move to the selected neighbor
+        strncat(current_solution, &next_neighbor, 1);
+        current_heuristic = heuristic[next_neighbor - 'A'];
+    }
+
+    strcpy(result, current_solution);
+}
+
+int main() {
+    initializeGraph();
+
+    char source = 'S';
+    char destination = 'G';
+
+    char initial_solution[] = {source, '\0'};
+    char best_solution[100];
+
+    hill_climbing_with_heuristic(best_solution, source, destination, heuristic);
+
+    if (best_solution[0] != '\0') {
+        printf("Best path from %c to %c: %s\n", source, destination, best_solution);
+        // printf("Total heuristic: %d\n", evaluate_solution(best_solution, heuristic));
+    } else {
+        printf("No path from %c to %c\n", source, destination);
+    }
+
+    return 0;
+}
