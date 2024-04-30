@@ -1,7 +1,7 @@
 **CS5001 EVOLUTIONARY COMPUTING**
 This repository now hosts the algorithms covered in the Evolutionary Computing Course offered at Shiv Nadar University Chennai, tailored for the M.Tech in Artificial Intelligence & Data Science curriculumsearch algorithms.
 
-**Search ALGORITHMS**
+**SEARCH ALGORITHMS**
 The following algorithms are implemented:
 
 1)British Museum Search
